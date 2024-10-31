@@ -28,13 +28,13 @@ const shapes = [
 
 // 定义渐变色
 const gradients = [
-    ['#FF416C', '#FF4B2B'], // 红色渐变
-    ['#4776E6', '#8E54E9'], // 蓝紫渐变
-    ['#00B4DB', '#0083B0'], // 青色渐变
-    ['#FFD200', '#F7971E'], // 黄色渐变
-    ['#56ab2f', '#a8e063'], // 绿色渐变
-    ['#614385', '#516395'], // 紫色渐变
-    ['#eaafc8', '#654ea3']  // 粉紫渐变
+    ['#FF6B6B', '#FF8E53'], // 明亮的红橙色
+    ['#4E54C8', '#8F94FB'], // 亮蓝色
+    ['#00E1FF', '#00B4DB'], // 青色
+    ['#FFD93D', '#FF9900'], // 明黄色
+    ['#6DD5ED', '#2193B0'], // 湖蓝色
+    ['#FF758C', '#FF7EB3'], // 粉色
+    ['#7F00FF', '#E100FF']  // 紫色
 ];
 
 let board = Array(rows).fill().map(() => Array(cols).fill(0));
@@ -55,16 +55,20 @@ function drawBlock(x, y, gradient) {
     context.save();
     context.translate(x * blockSize, y * blockSize);
     
-    // 绘制主体
+    // 主体
     context.fillStyle = gradient;
     context.fillRect(1, 1, blockSize - 2, blockSize - 2);
     
-    // 绘制高光效果
-    context.fillStyle = 'rgba(255, 255, 255, 0.1)';
-    context.fillRect(1, 1, blockSize - 2, blockSize/2);
+    // 增强高光效果
+    context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    context.fillRect(1, 1, blockSize - 2, blockSize/3);
     
-    // 绘制边框
-    context.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    // 添加底部阴影
+    context.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    context.fillRect(1, blockSize/1.5, blockSize - 2, blockSize/3);
+    
+    // 边框
+    context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
     context.strokeRect(1, 1, blockSize - 2, blockSize - 2);
     
     context.restore();
@@ -84,12 +88,12 @@ function updateScore(clearedLines) {
 
 // 绘制游戏界面
 function draw() {
-    // 绘制背景
-    context.fillStyle = '#1e2030';
+    // 使用稍微浅一点的背景色
+    context.fillStyle = '#2a2d3e';
     context.fillRect(0, 0, canvas.width, canvas.height);
     
     // 绘制网格
-    context.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    context.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     for(let i = 0; i < rows; i++) {
         for(let j = 0; j < cols; j++) {
             context.strokeRect(j * blockSize, i * blockSize, blockSize, blockSize);
@@ -148,10 +152,11 @@ function collision() {
 
 // 固定方块
 function merge() {
+    const gradient = createGradient(currentPiece.gradient);
     currentPiece.shape.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value) {
-                board[currentPieceY + y][currentPieceX + x] = currentPiece.gradient;
+                board[currentPieceY + y][currentPieceX + x] = gradient;
             }
         });
     });
