@@ -26,15 +26,15 @@ const shapes = [
     [[0, 1, 1], [1, 1, 0]]  // Z
 ];
 
-// 定义渐变色
+// 定义渐变色数组
 const gradients = [
-    ['#FF6B6B', '#FF8E53'], // 明亮的红橙色
-    ['#4E54C8', '#8F94FB'], // 亮蓝色
-    ['#00E1FF', '#00B4DB'], // 青色
-    ['#FFD93D', '#FF9900'], // 明黄色
-    ['#6DD5ED', '#2193B0'], // 湖蓝色
-    ['#FF758C', '#FF7EB3'], // 粉色
-    ['#7F00FF', '#E100FF']  // 紫色
+    ['#FF416C', '#FF4B2B'], // 红色渐变
+    ['#4776E6', '#8E54E9'], // 蓝紫渐变
+    ['#00B4DB', '#0083B0'], // 青色渐变
+    ['#FFD200', '#F7971E'], // 黄色渐变
+    ['#56ab2f', '#a8e063'], // 绿色渐变
+    ['#614385', '#516395'], // 紫色渐变
+    ['#eaafc8', '#654ea3']  // 粉紫渐变
 ];
 
 let board = Array(rows).fill().map(() => Array(cols).fill(0));
@@ -55,45 +55,29 @@ function drawBlock(x, y, gradient) {
     context.save();
     context.translate(x * blockSize, y * blockSize);
     
-    // 主体
+    // 绘制主体
     context.fillStyle = gradient;
     context.fillRect(1, 1, blockSize - 2, blockSize - 2);
     
-    // 增强高光效果
-    context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    context.fillRect(1, 1, blockSize - 2, blockSize/3);
+    // 绘制高光效果
+    context.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    context.fillRect(1, 1, blockSize - 2, blockSize/2);
     
-    // 添加底部阴影
-    context.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    context.fillRect(1, blockSize/1.5, blockSize - 2, blockSize/3);
-    
-    // 边框
-    context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    // 绘制边框
+    context.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     context.strokeRect(1, 1, blockSize - 2, blockSize - 2);
     
     context.restore();
 }
 
-// 更新分数
-function updateScore(clearedLines) {
-    const points = [0, 100, 300, 500, 800]; // 0,1,2,3,4行的分数
-    score += points[clearedLines];
-    lines += clearedLines;
-    level = Math.floor(lines / 10) + 1;
-    
-    scoreElement.textContent = score;
-    levelElement.textContent = level;
-    linesElement.textContent = lines;
-}
-
 // 绘制游戏界面
 function draw() {
-    // 使用稍微浅一点的背景色
-    context.fillStyle = '#2a2d3e';
+    // 绘制背景
+    context.fillStyle = '#1e2030';
     context.fillRect(0, 0, canvas.width, canvas.height);
     
     // 绘制网格
-    context.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    context.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     for(let i = 0; i < rows; i++) {
         for(let j = 0; j < cols; j++) {
             context.strokeRect(j * blockSize, i * blockSize, blockSize, blockSize);
@@ -104,7 +88,8 @@ function draw() {
     board.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value) {
-                drawBlock(x, y, value);
+                const gradient = createGradient(value);
+                drawBlock(x, y, gradient);
             }
         });
     });
@@ -122,35 +107,19 @@ function draw() {
     }
 }
 
-// 创建新方块
-function createPiece() {
-    const shapeIndex = Math.floor(Math.random() * shapes.length);
-    currentPiece = {
-        shape: shapes[shapeIndex],
-        gradient: gradients[shapeIndex],
-        x: Math.floor(cols / 2) - 1,
-        y: 0
-    };
-    currentPieceX = currentPiece.x;
-    currentPieceY = currentPiece.y;
-}
-
-// 碰撞检测
-function collision() {
-    if (!currentPiece) return false;
+// 更新分数
+function updateScore(clearedLines) {
+    const points = [0, 100, 300, 500, 800]; // 0,1,2,3,4行的分数
+    score += points[clearedLines];
+    lines += clearedLines;
+    level = Math.floor(lines / 10) + 1;
     
-    return currentPiece.shape.some((row, y) => {
-        return row.some((value, x) => {
-            if (!value) return false;
-            const newX = currentPieceX + x;
-            const newY = currentPieceY + y;
-            return newX < 0 || newX >= cols || newY >= rows ||
-                   (newY >= 0 && board[newY][newX]);
-        });
-    });
+    scoreElement.textContent = score;
+    levelElement.textContent = level;
+    linesElement.textContent = lines;
 }
 
-// 固定方块
+// merge函数
 function merge() {
     currentPiece.shape.forEach((row, y) => {
         row.forEach((value, x) => {
@@ -159,8 +128,6 @@ function merge() {
             }
         });
     });
-    
-    // 在方块固定后立即检查和清除完整的行
     clearLines();
 }
 
@@ -215,6 +182,34 @@ function rotate() {
     if (collision()) {
         currentPiece.shape = previousShape;
     }
+}
+
+// 创建新方块的函数
+function createPiece() {
+    const shapeIndex = Math.floor(Math.random() * shapes.length);
+    currentPiece = {
+        shape: shapes[shapeIndex],
+        gradient: gradients[shapeIndex],
+        x: Math.floor(cols / 2) - 1,
+        y: 0
+    };
+    currentPieceX = currentPiece.x;
+    currentPieceY = currentPiece.y;
+}
+
+// 碰撞检测
+function collision() {
+    if (!currentPiece) return false;
+    
+    return currentPiece.shape.some((row, y) => {
+        return row.some((value, x) => {
+            if (!value) return false;
+            const newX = currentPieceX + x;
+            const newY = currentPieceY + y;
+            return newX < 0 || newX >= cols || newY >= rows ||
+                   (newY >= 0 && board[newY][newX]);
+        });
+    });
 }
 
 // 键盘控制
