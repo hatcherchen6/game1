@@ -152,23 +152,37 @@ function collision() {
 
 // 固定方块
 function merge() {
-    const gradient = createGradient(currentPiece.gradient);
     currentPiece.shape.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value) {
-                board[currentPieceY + y][currentPieceX + x] = gradient;
+                board[currentPieceY + y][currentPieceX + x] = currentPiece.gradient;
             }
         });
     });
+    
+    // 在方块固定后立即检查和清除完整的行
+    clearLines();
 }
 
 // 清除完整的行
 function clearLines() {
+    let linesCleared = 0;
+    
     for (let y = rows - 1; y >= 0; y--) {
         if (board[y].every(value => value !== 0)) {
+            // 删除已满的行
             board.splice(y, 1);
+            // 在顶部添加新的空行
             board.unshift(Array(cols).fill(0));
+            // 增加已清除的行数
+            linesCleared++;
+            // 因为删除了一行，需要重新检查当前行
+            y++;
         }
+    }
+    
+    if (linesCleared > 0) {
+        updateScore(linesCleared);
     }
 }
 
